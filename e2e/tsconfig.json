@@ -1,0 +1,13 @@
+{
+  // The e2e suite runs in Node under Playwright, not in the Worker, so it
+  // typechecks separately from the root config: `yarn tsc --noEmit -p e2e`.
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "types": ["node", "@playwright/test"],
+    // page.evaluate callbacks run in the browser, so they type against the DOM.
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
+    "jsx": "preserve",
+    "jsxImportSource": null
+  },
+  "include": ["./**/*.ts", "../playwright.config.ts"]
+}

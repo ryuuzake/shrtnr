@@ -1,0 +1,68 @@
+{
+  "name": "shrtnr",
+  "main": "src/index.tsx",
+  "assets": { "directory": "public" },
+  // Advance periodically after reviewing the flags that turn on between
+  // dates (developers.cloudflare.com/workers/configuration/compatibility-flags)
+  // and running `yarn test` and `yarn e2e`. The local runtime rejects a date
+  // newer than its own release, and wrangler and the vitest pool each bundle
+  // their own workerd, so the ceiling is the older of the two: `yarn test`
+  // names the newest date it supports when the value is too new. Last
+  // advanced 2026-09-21 from 2026-04-01: the intervening flags touch
+  // WebSocket close replies, error serialization, Workflows, Containers and
+  // Python, none of which this Worker's own code relies on. Rerun
+  // `yarn types` after changing it.
+  "compatibility_date": "2026-08-22",
+  "compatibility_flags": ["nodejs_compat"],
+  "upload_source_maps": true,
+  // Per-version preview URLs (<version>-shrtnr.<account>.workers.dev) sit on
+  // hostnames no Access application covers, and wrangler turns them back on
+  // at every deploy unless this is set. The workers.dev URL itself stays on
+  // (workers_dev is unset): a one-click deploy has no other URL. Set this to
+  // true to preview branch builds from Workers Builds.
+  "preview_urls": false,
+  "observability": {
+    "logs": {
+      "enabled": true,
+      "invocation_logs": true
+    },
+    "traces": {
+      "enabled": true
+    }
+  },
+  // No resource IDs on purpose. Wrangler provisions bindings that carry no
+  // id: `wrangler deploy` creates the KV namespace (named after the Worker
+  // and binding) and the D1 database (named database_name) on the first
+  // deploy, links later deploys to them by binding name, and the Deploy to
+  // Cloudflare flow provisions the same way in a fork. `wrangler dev`
+  // creates local copies. After a deploy from your machine wrangler writes
+  // the new IDs into this file: discard that change, the IDs are account
+  // specific and the deploy works without them.
+  "kv_namespaces": [
+    {
+      "binding": "SLUG_KV","id": "550eb56404b24a669f9173381e6ce426"
+    }
+  ],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "shrtnr-db",
+      "migrations_dir": "migrations","database_id": "88cdc857-29c0-4774-ae2c-beb642d7e49e"
+    }
+  ],
+  // Durable Object for MCP agent sessions
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "MCP_OBJECT",
+        "class_name": "ShrtnrMCP"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": ["ShrtnrMCP"]
+    }
+  ]
+}
